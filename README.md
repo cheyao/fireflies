@@ -2,7 +2,7 @@
 
 Firefly PCBs powered by the CH32V003.
 
-![](IMG_20260601_205934341.jpg)
+![](assets/IMG_20260601_205934341.jpg)
 
 These boards periodically flashes a xenon flash based on a timer, which gets accelerated when it detects flashes from surrounding PCBs.
 
