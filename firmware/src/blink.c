@@ -76,6 +76,6 @@ int main() {
 
 		printf("%d\n", adc_buffer[0]);
 
-		Delay_Ms(100);
+		Delay_Ms(5);
 	}
 }

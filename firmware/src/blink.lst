@@ -294,7 +294,7 @@ WEAK int _write(int fd, const char *buf, int size)
  24e:	00100737          	lui	a4,0x100
 		while( ( lastdmd = (*DMDATA0) ) & 0x80 )
  252:	e00007b7          	lui	a5,0xe0000
- 256:	0705                	addi	a4,a4,1 # 100001 <blink.c.11f1f337+0xfdc50>
+ 256:	0705                	addi	a4,a4,1 # 100001 <blink.c.11f1f337+0xfdc52>
  258:	0f478793          	addi	a5,a5,244 # e00000f4 <_eusrstack+0xbffff8f4>
  25c:	4394                	lw	a3,0(a5)
  25e:	0806f613          	andi	a2,a3,128
@@ -488,7 +488,7 @@ int mini_itoa(long value, unsigned int radix, int uppercase, int unsig, char *bu
  3c8:	20000117          	auipc	sp,0x20000
  3cc:	43810113          	addi	sp,sp,1080 # 20000800 <_eusrstack>
  3d0:	6509                	lui	a0,0x2
- 3d2:	88050513          	addi	a0,a0,-1920 # 1880 <ch32fun.c.6dbb3073+0x627>
+ 3d2:	88050513          	addi	a0,a0,-1920 # 1880 <ch32fun.c.6dbb3073+0x629>
  3d6:	30051073          	csrw	mstatus,a0
  3da:	468d                	li	a3,3
  3dc:	00000517          	auipc	a0,0x0
@@ -855,7 +855,7 @@ static inline uint32_t __get_MTVAL(void)
 		RCC->CFGR0 = BASE_CFGR0;
  670:	0007a223          	sw	zero,4(a5) # 40021004 <_eusrstack+0x20020804>
 		RCC->CTLR  = BASE_CTLR | RCC_HSION | RCC_PLLON; 			// Use HSI, enable PLL.
- 674:	08170713          	addi	a4,a4,129 # 1080081 <blink.c.11f1f337+0x107dcd0>
+ 674:	08170713          	addi	a4,a4,129 # 1080081 <blink.c.11f1f337+0x107dcd2>
  678:	c398                	sw	a4,0(a5)
 		FLASH->ACTLR = FLASH_ACTLR_LATENCY_0;
 	#endif
@@ -1026,7 +1026,7 @@ int main() {
  768:	c754                	sw	a3,12(a4)
 	DMA1_Channel1->CFGR = DMA_M2M_Disable | DMA_Priority_VeryHigh | DMA_MemoryDataSize_HalfWord |
  76a:	668d                	lui	a3,0x3
- 76c:	5a068693          	addi	a3,a3,1440 # 35a0 <blink.c.11f1f337+0x11ef>
+ 76c:	5a068693          	addi	a3,a3,1440 # 35a0 <blink.c.11f1f337+0x11f1>
  770:	c714                	sw	a3,8(a4)
 			      DMA_PeripheralDataSize_HalfWord | DMA_MemoryInc_Enable | DMA_Mode_Circular |
 			      DMA_DIR_PeripheralSRC;
@@ -1044,7 +1044,7 @@ int main() {
 	// Enable continuous conversion and DMA
 	ADC1->CTLR2 |= ADC_CONT | ADC_DMA | ADC_EXTSEL;
  77c:	000e06b7          	lui	a3,0xe0
- 780:	10268693          	addi	a3,a3,258 # e0102 <blink.c.11f1f337+0xddd51>
+ 780:	10268693          	addi	a3,a3,258 # e0102 <blink.c.11f1f337+0xddd53>
 	ADC1->CTLR1 |= ADC_SCAN;
  784:	10076713          	ori	a4,a4,256
  788:	c3d8                	sw	a4,4(a5)
@@ -1101,13 +1101,14 @@ int main() {
 	uint32_t targend = SysTick->CNT + n;
  7da:	e000f6b7          	lui	a3,0xe000f
  7de:	4698                	lw	a4,8(a3)
- 7e0:	000927b7          	lui	a5,0x92
- 7e4:	7c078793          	addi	a5,a5,1984 # 927c0 <blink.c.11f1f337+0x9040f>
- 7e8:	973e                	add	a4,a4,a5
+ 7e0:	679d                	lui	a5,0x7
+ 7e2:	53078793          	addi	a5,a5,1328 # 7530 <blink.c.11f1f337+0x5181>
+ 7e6:	973e                	add	a4,a4,a5
 	while( ((int32_t)( SysTick->CNT - targend )) < 0 );
- 7ea:	469c                	lw	a5,8(a3)
- 7ec:	8f99                	sub	a5,a5,a4
- 7ee:	fe07cee3          	bltz	a5,7ea <main+0x136>
- 7f2:	b7f9                	j	7c0 <main+0x10c>
+ 7e8:	469c                	lw	a5,8(a3)
+ 7ea:	8f99                	sub	a5,a5,a4
+ 7ec:	fe07cee3          	bltz	a5,7e8 <main+0x134>
+ 7f0:	bfc1                	j	7c0 <main+0x10c>
+ 7f2:	0000                	unimp
  7f4:	6425                	lui	s0,0x9
  7f6:	000a                	c.slli	zero,0x2
