@@ -2,118 +2,127 @@
 
 #include <stdio.h>
 
+// I2C2 (PC)
+#define PIN_SDA PC6
+#define PIN_SCL PC5
+#define ADDR_READ
+
+#define DELAY1 Delay_Us(1);
+#define DELAY2 Delay_Us(2);
+#define DSCL_IHIGH                                                                                                     \
+	{                                                                                                              \
+		funPinMode(PIN_SCL, GPIO_CFGLR_IN_PUPD);                                                               \
+		funDigitalWrite(PIN_SCL, 1);                                                                           \
+	}
+#define DSDA_IHIGH                                                                                                     \
+	{                                                                                                              \
+		funPinMode(PIN_SDA, GPIO_CFGLR_IN_PUPD);                                                               \
+		funDigitalWrite(PIN_SDA, 1);                                                                           \
+	}
+#define DSDA_INPUT                                                                                                     \
+	{                                                                                                              \
+		funPinMode(PIN_SDA, GPIO_CFGLR_IN_PUPD);                                                               \
+		funDigitalWrite(PIN_SDA, 1);                                                                           \
+	}
+#define DSCL_OUTPUT                                                                                                    \
+	{                                                                                                              \
+		funDigitalWrite(PIN_SCL, 0);                                                                           \
+		funPinMode(PIN_SCL, GPIO_CFGLR_OUT_2Mhz_PP);                                                           \
+	}
+#define DSDA_OUTPUT                                                                                                    \
+	{                                                                                                              \
+		funDigitalWrite(PIN_SDA, 0);                                                                           \
+		funPinMode(PIN_SDA, GPIO_CFGLR_OUT_2Mhz_PP);                                                           \
+	}
+#define READ_DSDA funDigitalRead(PIN_SDA)
+#define I2CNEEDGETBYTE 1
+#define I2CNEEDSCAN 0
+
+#include "static_i2c.h"
+
 volatile uint16_t adc_buffer[1];
 
 void setup_opa(void);
-void setup_i2c(void);
 
-void i2c_send(uint8_t addr, uint8_t* data, uint8_t size);
-uint8_t i2c_event(uint32_t event_mask);
+#define SENSOR_WRITE 0xA6
+#define SENSOR_READ 0xA7
 
-// I2C2
-#define SDA PC6
-#define SCL PC5
+#define MAIN_CTRL 0x00
+#define ALS_MEAS_RATE 0x04
+#define ALS_GAIN 0x05
+#define PART_ID 0x06
+#define MAIN_STATUS 0x07
+#define ALS_DATA_0 0x0D
+#define ALS_DATA_1 0x0E
+#define ALS_DATA_2 0x0F
+#define INT_CFG 0x19
+#define INT_PST 0x1A
+#define ALS_THRES_UP_0 0x21
+#define ALS_THRES_UP_1 0x22
+#define ALS_THRES_UP_2 0x23
+#define ALS_THRES_LOW_0 0x24
+#define ALS_THRES_LOW_1 0x25
+#define ALS_THRES_LOW_2 0x26
+
+static uint8_t ReadByte(const uint8_t reg) {
+	SendStart();
+	SendByte(SENSOR_WRITE);
+	SendByte(reg);
+	SendStart();
+	SendByte(SENSOR_READ);
+	const uint8_t data = GetByte(1);
+	SendStop();
+
+	return data;
+}
 
 int main() {
 	SystemInit();
 	funGpioInitAll();
 
-	setup_i2c();
+	ConfigI2C();
 
+	// Example: 0xA6: 10100110
+	// ...SD...............E.R
+	// ---____--___--___--__--_
+	// --___-----_____----x-zz-
+
+	// Set resolution to 25ms
+	SendStart();
+	SendByte(SENSOR_WRITE);
+	SendByte(ALS_MEAS_RATE);
+	SendByte(0b01000000);
+	SendStop();
+    
+    // Gain
+	SendStart();
+	SendByte(SENSOR_WRITE);
+	SendByte(ALS_GAIN);
+	SendByte(0b00000100);
+	SendStop();
+
+	// Enable
+	SendStart();
+	SendByte(SENSOR_WRITE);
+	SendByte(MAIN_CTRL);
+	SendByte(0b00000010);
+	SendStop();
+
+	// Read status
 	while (1) {
-		/*
-		// Wait till DMA recieves a value
-			while (!(DMA1->INTFR & DMA1_FLAG_TC1))
-				;
-			DMA1->INTFCR = DMA1_FLAG_TC1;
+		const uint8_t status = ReadByte(MAIN_STATUS);
 
-			printf("%d\n", adc_buffer[0]);
-		*/
+		Delay_Ms(1);
 
-		Delay_Ms(5);
-	}
-}
-
-uint8_t i2c_event(uint32_t event_mask) {
-	/* read order matters here! STAR1 before STAR2!! */
-	uint32_t status = I2C1->STAR1 | (I2C1->STAR2 << 16);
-	return (status & event_mask) == event_mask;
-}
-
-#define TIMEOUT_MAX 100000
-void i2c_send(uint8_t addr, uint8_t* data, uint8_t size) {
-	int32_t timeout;
-
-	timeout = TIMEOUT_MAX;
-	// We are busy
-	while ((I2C1->STAR2 & I2C_STAR2_BUSY) && (timeout--))
-		;
-	if (timeout == -1) {
-		printf("I2C Busy");
-		return;
-	}
-
-	I2C1->CTLR1 |= I2C_CTLR1_START;
-	timeout = TIMEOUT_MAX;
-	while ((!i2c_event(SSD1306_I2C_EVENT_MASTER_MODE_SELECT)) && (timeout--))
-		;
-	if (timeout == -1) {
-		printf("I2C not in master mode");
-		return;
-	}
-
-	I2C1->DATAR = addr << 1;
-
-	timeout = TIMEOUT_MAX;
-	while ((!i2c_event(SSD1306_I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED)) && (timeout--))
-		;
-	if (timeout == -1) {
-		printf("I2C not in master transmit mode");
-		return;
-	}
-
-	while (size--) {
-		// wait for TX Empty
-		timeout = TIMEOUT_MAX;
-		while (!(I2C1->STAR1 & I2C_STAR1_TXE) && (timeout--))
-			;
-		if (timeout == -1) {
-			printf("I2C not in tx empty");
-			return;
+		if (!(status & (1 << 3))) {
+			// No new data
+			continue;
 		}
 
-		I2C1->DATAR = *data++;
+		const uint32_t value =
+			(ReadByte(ALS_DATA_2) << 16) | (ReadByte(ALS_DATA_1) << 8) | (ReadByte(ALS_DATA_0) << 0);
+		printf("0x%lx\n", value);
 	}
-
-	// wait for tx complete
-	timeout = TIMEOUT_MAX;
-	while ((!i2c_event(SSD1306_I2C_EVENT_MASTER_BYTE_TRANSMITTED)) && (timeout--))
-		;
-	if (timeout == -1) {
-        printf("I2C not transmit completing")
-    }
-
-	// set STOP condition
-	I2C1->CTLR1 |= I2C_CTLR1_STOP;
-}
-
-void setup_i2c(void) {
-	// AFIO enabled by funinitall
-	RCC->APB1PCENR |= RCC_APB1Periph_I2C1;
-	AFIO->PCFR1 &= AFIO_PCFR1_I2C1_HIGH_BIT_REMAP; // PC5 & PC6
-
-	GPIOC->CFGLR &= (0xf << (4 * 5)) | (0xf << (4 * 6));
-	GPIOC->CFGLR |= ((GPIO_Speed_30MHz | GPIO_CNF_OUT_OD_AF) << (4 * 5)) |
-			((GPIO_Speed_30MHz | GPIO_CNF_OUT_OD_AF) << (4 * 6));
-
-	RCC->APB1PRSTR |= RCC_APB1Periph_I2C1;
-	RCC->APB1PRSTR &= ~RCC_APB1Periph_I2C1;
-
-	I2C1->CTLR2 |= (FUNCONF_SYSTEM_CORE_CLOCK / 2000000) & I2C_CTLR2_FREQ;
-	I2C1->CKCFGR = (1 << 15) | (1 << 14) | (FUNCONF_SYSTEM_CORE_CLOCK / (25 * 1000000)) & I2C_CKCFGR_CCR;
-
-	I2C1->CTLR1 |= I2C_CTLR1_PE;
-	I2C1->CTLR1 |= I2C_CTLR1_ACK;
 }
 
 void setup_opa(void) {
@@ -121,7 +130,7 @@ void setup_opa(void) {
 	RCC->APB2PCENR |= RCC_APB2Periph_ADC1;
 
 	// PD4 is analog input chl 7
-	GPIOD->CFGLR &= ~(0xf << (4 * 4));
+	GPIOD->CFGLR &= ~(0xF << (4 * 4));
 
 	// Reset the ADC to init all regs
 	RCC->APB2PRSTR |= RCC_APB2Periph_ADC1;
