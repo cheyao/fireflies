@@ -1,6 +1,10 @@
-# Fireflies
+# 2026-06-11: Transfered project!
 
-Fireflies that go blink - an ultra low cost sensor that detects light.
+**Total time spent: 1.2 hours**
+
+<img width="1433" height="1286" alt="image" src="https://github.com/user-attachments/assets/f6a15d2b-a7e1-4f9f-9b52-b929deb7c9ae" />
+
+Transfered project from macando to forge, it was an enourmous pita to copy and paste all the journals and format everything
 
 # 2026-06-11: Got software I2C to work
 
@@ -245,7 +249,7 @@ The 7seg also got multiplexed
 
 # 2026-06-11: Version 1 of the schematic 
 
-**Total time spent: 6.2 hours**
+**Total time spent: 6.5 hours**
 
 ![image.png](https://cdn.hackclub.com/019eb5c4-f498-72e9-aaba-136540c1e8f8/image.png)
 
