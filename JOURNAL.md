@@ -1,10 +1,14 @@
 # 2026-06-11: Transfered project!
 
-**Total time spent: 1.2 hours**
+**Total time spent: 1.7 hours**
 
 <img width="1433" height="1286" alt="image" src="https://github.com/user-attachments/assets/f6a15d2b-a7e1-4f9f-9b52-b929deb7c9ae" />
 
 Transfered project from macando to forge, it was an enourmous pita to copy and paste all the journals and format everything
+
+![](https://github.com/cheyao/fireflies/blob/main/assets/test.png)
+
+Also added a demo of reverse biases opamp attenuated light sensing!
 
 # 2026-06-11: Got software I2C to work
 
