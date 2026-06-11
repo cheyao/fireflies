@@ -42,3 +42,11 @@ Check diagram:
 
 ![](assets/1000006794.jpg)
 
+### BOM
+
+| Item | Price |  Where |
+|---|---|----|
+|PCB| 4$| elecrow|
+|Stencil| 2$| elecrow|
+|Components (check hardware bom)| $30| lcsc|
+|Shipping| varies by region| none|
